@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+PORT = ARGV[0] || 8000
+
+# Replace current process
+exec "php -S localhost:#{PORT}"
