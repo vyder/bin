@@ -1,0 +1,125 @@
+#!/usr/bin/env ruby
+
+require 'colorize'
+require 'json'
+
+OPTIONS_FILEPATH = '.python-server-config'
+DEFAULT_OPTS = {
+    :port => 8000
+}
+options = {}
+
+def abort
+    puts "Aborting...".red
+    exit 1
+end
+
+
+legal_commands = [ "up", "down" ]
+
+
+command = ARGV[0]
+
+
+unless legal_commands.include? command
+    puts "Unrecognized 'server' command: #{command}".red
+    abort
+end
+
+# Parse options
+if File.exists? OPTIONS_FILEPATH
+    options = JSON.parse(File.read(OPTIONS_FILEPATH))
+else
+    options = DEFAULT_OPTS
+    puts "Can't find '#{OPTIONS_FILEPATH}'. Assuming defaults:".green
+    puts JSON.pretty_generate(options).green + "\n"
+end
+
+
+# 'screen' management functions
+
+# Create new screen
+def create_new_screen( screen_name )
+    %x( screen -dmS #{screen_name} )
+end
+
+# Kill specified screen
+def kill_screen( screen_name )
+    %x( screen -S #{screen_name} -X quit )
+end
+
+# Start a python server
+def start_server_at( screen_name, port = "" )
+    %x( screen -S #{screen_name} -X python -m SimpleHTTPServer #{port} )
+end
+
+# Kills python server at specified screen
+def kill_server( screen_name )
+    %x( screen -S #{screen_name} -X stuff $'\003' )
+end
+
+
+# Specify task handlers
+tasks = {}
+
+# Start up a python server in a screen session
+# then save the session name in options
+tasks['up'] = Proc.new {
+    unless options['session'].nil?
+        # Check if there's actually a screen still running
+        out = %x( screen -d | grep #{options['session']})
+        active_sessions = out.chomp.split("\t").reject! { |c| c.empty? or c =~ /Detached/ }
+
+        if active_sessions.size > 1
+            puts "Found multiple active sessions.".red
+            puts "Please clean this shit up before calling on me again.".red
+            abort
+        elsif active_sessions.size == 1
+            screen_name = active_sessions[0]
+            puts "Killed existing screen session: #{screen_name}".yellow
+            kill_screen( screen_name )
+        end
+
+        # Looks like there isn't any active screen sessions
+        # Best to clean up the options
+        options['session'] = nil
+    end
+
+    screen_name = 'python_server'
+
+    puts "Creating screen session '#{screen_name}'".green
+    create_new_screen screen_name
+    puts "Starting up python server at port:#{options[:port]}".green
+    start_server_at( screen_name, options[:port] )
+
+    options['session'] = screen_name
+}
+
+# Find a session name in the options file,
+# Open the screen session and shut down
+# the python server
+tasks['down'] = Proc.new {
+    session = options['session']
+
+    if session.nil?
+        puts "Can't find a screen session here".red
+        abort
+    end
+
+    puts "Shutting down server...".green
+    kill_server( session )
+    puts "Killing associated screen session...".green
+    kill_screen( session )
+    options['session'] = nil
+
+    puts "All done.".green
+}
+
+# Execute specific task
+tasks[command].call
+
+
+# Write options to file
+File.open(OPTIONS_FILEPATH, 'w') do |f|
+    f.write JSON.pretty_generate(options)
+end

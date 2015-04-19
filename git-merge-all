@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+# Get a list of branches in the repository
+#
+def all_branches
+    %x( git branch ).gsub!('*', '').gsub!(' ', '').split("\n")
+end
+
+# Get the branch name for the repository HEAD
+#
+def current_branch
+    %x(git branch | grep '*' | cut -d' ' -f2).chomp
+end
+
+
+deployable_branches = ["master", "staging", "live"]
+
+source_branch = ARGV[0] || current_branch
+remote        = ARGV[1] || "origin"
+
+deployable_branches.delete(source_branch)
+
+deployable_branches.each do |branch|
+    if all_branches.include? branch
+        %x( git checkout #{branch} )
+        %x( git merge #{source_branch} )
+    end
+end
+
+# Reset location
+%x( git checkout #{source_branch} )
