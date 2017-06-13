@@ -1,20 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-if [[ $1 == "-h" || $1 == "--help" ]]; then
-        echo "Usage: space (-a|--all) (-l|--level n)"
+require 'slop'
+
+opts = Slop.parse do |o|
+    o.bool '-a', '--all', "Include dotfiles", default: false
+    o.integer '-l', '--level', "The level to which to traverse (default: 0)", default: 0
+    o.on '-h', '--help' do
+        puts o
         exit
-fi
+    end
+end
 
-all=""
-
-if [[ $1 == "-a" || $1 == "--all" ]]; then
-        all="-a"
-        shift
-fi
-
-level=0
-if [[ $1 == "-l" || $1 == "--level" ]]; then
-        level=$2
-fi
-
-sudo du -h $all -d $level *
+system("sudo du -h #{(opts.all? ? "-a" : "")} -d #{opts[:level]} *")
