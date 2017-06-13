@@ -1,2 +1,12 @@
-# Ignore these for no particular reason
-hub
+*
+
+# Only add these files
+!.gitignore
+!git-big-blobs
+!git-deploy-all
+!git-merge-all
+!git-rewrite-author
+!php-server
+!server
+!sub
+!unity
