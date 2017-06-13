@@ -7,6 +7,7 @@
 !git-merge-all
 !git-rewrite-author
 !php-server
+!renamer
 !server
 !sub
 !unity

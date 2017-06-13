@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'slop'
+
+opts = Slop.parse do |o|
+    o.bool '-d', '--dry-run', "Don't actually rename anything", default: false
+    o.on '-h', '--help', "Prints this message" do
+        puts o
+        exit
+    end
+end
+
+exts = [
+    "mp4",
+    "mkv"
+]
+
+def clean_name(name)
+    name.gsub(/[.]/, ' ').gsub(/[\[\]\-\{\}]/, ' ').gsub(/ +$/, '')
+end
+
+exts.each do |ext|
+    Dir.glob("**/*.#{ext}").each do |filename|
+        dir  = File.dirname(filename)
+        file = File.basename(filename)
+
+        new_filename = nil
+
+        # TV Show?
+        m = file.match /^(.+?)(S\d{2}E\d{2})/
+        unless m.nil?
+            name   = clean_name(m[1])
+            serial = m[2]
+
+            new_filename = "#{name} - #{serial}.#{ext}"
+        end
+
+        # Movie?
+        m = file.match /^(.+?)(\d{4})/
+        unless m.nil?
+            name = clean_name(m[1])
+            year = m[2]
+
+            new_filename = "#{name} [#{year}].#{ext}"
+        end
+
+        # Rename the file
+        unless new_filename.nil? || (filename == new_filename)
+            if opts.dry_run?
+                puts "#{filename} => #{new_filename}"
+            else
+                FileUtils.mv(filename, new_filename)
+            end
+        end
+
+        # Only trash the folder if it's not the current one
+        unless dir == "." || dry_run?
+            FileUtils.mv(dir, "#{ENV['HOME']}/.Trash/")
+        end
+    end
+end
