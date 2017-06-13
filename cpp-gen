@@ -1,0 +1,117 @@
+#!/usr/bin/env ruby
+require 'erb'
+require 'fileutils'
+require 'optparse'
+require 'slop'
+require 'active_support/core_ext/numeric/time'
+
+#
+# Templates
+#
+
+raw_header_template = <<EOF
+//
+//  <%= classname %>.<%= header_ext %>
+//  <%= project  %>
+//
+//  Created by <%= author %> on <%= date %>.
+//
+
+#ifndef <%= classname %>_<%= header_ext %>
+#define <%= classname %>_<%= header_ext %>
+
+class <%= classname %> {
+
+};
+
+
+#endif  /* <%= classname %>_<%= header_ext %> */
+
+EOF
+
+raw_source_template = <<EOF
+//
+//  <%= classname %>.cpp
+//  <%= project  %>
+//
+//  Created by <%= author %> on <%= date %>.
+//
+
+#include "<%= classname %>.hpp"
+EOF
+
+#
+#   Option Parsing
+#
+
+options = Slop.parse do |o|
+    o.banner = "
+C++ File Generator
+------------------
+Usage: cpp-gen [options] <classname>"
+
+    o.string '-p', '--project',     "Specify a project name",   default: File.basename(Dir.pwd)
+    o.string '-a', '--author',      "Specify an author's name", default: %x(git config user.name).chomp
+    o.string '-t', '--time',        "Gets eval'd by ActiveSupport Time module", default: ""
+    o.bool   '-h', '--header-only', "Only create a *.h header file"
+
+    o.on "--header-template", "Prints the raw header template" do
+        print_template(raw_header_template, "Header")
+        exit
+    end
+
+    o.on "--source-template", "Prints the raw source template" do
+        print_template(raw_source_template, "Source")
+        exit
+    end
+
+    o.on '--help', "Shows this message" do
+        puts o
+        exit
+    end
+end
+
+if options.arguments.empty?
+    puts "Please specify a filename\n\n"
+    puts options
+    exit(1)
+end
+
+# First figure out the project name
+project = options[:project]
+
+# Then figure out author
+author = options[:author]
+
+# Date/Year
+# (gross I know, but eh)
+now  = options[:time].empty? ? Time.now : (eval options[:time])
+date = now.strftime("%d/%m/%y")
+
+# Parse Filename, and figure out the location
+filename = options.arguments.first
+
+classname = File.basename(filename)
+
+source_filename = "#{filename}.cpp"
+
+header_ext      = options.header_only? ? "h" : "hpp"
+header_filename = "#{filename}.#{header_ext}"
+
+# Path should be the same
+path = File.absolute_path("..", source_filename)
+
+# Make the path and all the parent directories
+FileUtils.mkdir_p(path)
+
+# Write header file
+header_template = ERB.new(raw_header_template, nil, "-")
+File.open(header_filename, "w+") { |f| f.write(header_template.result()) }
+puts "Generated file: #{header_filename}"
+
+exit if options.header_only?
+
+# Write source file
+source_template = ERB.new(raw_source_template, nil, "-")
+File.open(source_filename, "w+") { |f| f.write(source_template.result()) }
+puts "Generated file: #{source_filename}"

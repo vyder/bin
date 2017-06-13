@@ -2,10 +2,15 @@
 
 # Only add these files
 !.gitignore
+
+# Git helpers
 !git-big-blobs
 !git-deploy-all
 !git-merge-all
 !git-rewrite-author
+
+# Util
+!cpp-gen
 !php-server
 !renamer
 !server
