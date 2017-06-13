@@ -3,62 +3,23 @@
 # A utility to help get information about Unity projects
 # ---
 
-command = ARGV[0]
+require 'slop'
 
-commands = {}
-[
-    :version,
-    :gitignore
-].each do |cmd|
-    commands[cmd] = cmd.to_s
-end
+opts = Slop.parse do |o|
 
-unless commands.values.include? command
-    puts "Unknown command '#{command}'."
-    puts "Available commands are:"
+    #
+    # Generate a .gitignore file
+    #
+    o.on '-gi', '--gen-gitignore', "Generate a .gitignore file in the current directory" do
 
-    commands.each do |cmd|
-        puts "- #{cmd}"
-    end
+        gitignore_filename = File.expand_path(".gitignore")
 
-    exit 1
-end
+        if File.exists? gitignore_filename
+            puts ".gitignore already exists! Aborting..."
+            exit 1
+        end
 
-#
-# Get a project's Unity version
-#
-
-if command == commands[:version]
-
-    version_filename = "ProjectSettings/ProjectVersion.txt"
-    version_file     = File.expand_path(version_filename)
-
-    unless File.exists? version_file
-        raise "#{version_filename} doesn't exist in this directory!"
-        exit 1
-    end
-
-    contents = File.read(version_file)
-
-    puts "Version: " + contents.split("\n").first.chomp.gsub("m_EditorVersion: ", "")
-end
-
-
-
-#
-# Generate a .gitignore file
-#
-
-if command == commands[:gitignore]
-
-    gitignore_filename = File.expand_path(".gitignore")
-
-    if File.exists? gitignore_filename
-        puts ".gitignore already exists! Aborting..."
-        exit 1
-    end
-
-    contents = <<EOF
+        contents = <<EOF
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
@@ -93,8 +54,35 @@ iOS/
 
 EOF
 
-    File.open(gitignore_filename, "w+") { |f| f.write(contents) }
+        File.open(gitignore_filename, "w+") { |f| f.write(contents) }
+        exit
+    end
 
+
+    #
+    # Get a project's Unity version
+    #
+    o.on '-v', '--version', "Print the version of the current Unity project" do
+
+        version_filename = "ProjectSettings/ProjectVersion.txt"
+        version_file     = File.expand_path(version_filename)
+
+        unless File.exists? version_file
+            raise "#{version_filename} doesn't exist in this directory!"
+            exit 1
+        end
+
+        contents = File.read(version_file)
+
+        puts "Version: " + contents.split("\n").first.chomp.gsub("m_EditorVersion: ", "")
+
+        exit
+    end
+
+    o.on '-h', '--help' do
+        puts o
+        exit
+    end
 end
 
-
+puts opts
