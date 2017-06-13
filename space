@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if [[ $1 == "-h" || $1 == "--help" ]]; then
+        echo "Usage: space (-a|--all) (-l|--level n)"
+        exit
+fi
+
+all=""
+
+if [[ $1 == "-a" || $1 == "--all" ]]; then
+        all="-a"
+        shift
+fi
+
+level=0
+if [[ $1 == "-l" || $1 == "--level" ]]; then
+        level=$2
+fi
+
+sudo du -h $all -d $level *
