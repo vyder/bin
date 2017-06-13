@@ -1,6 +1,16 @@
 #!/usr/bin/env ruby
 
-PORT = ARGV[0] || 8000
+require 'slop'
+
+opts = Slop.parse do |o|
+    o.integer '-p', '--port',
+              "The port to run the server on (default: 8000)",
+               default: 8000
+    o.on '-h', '--help' do
+        puts o
+        exit
+    end
+end
 
 # Replace current process
-exec "php -S localhost:#{PORT}"
+exec "php -S localhost:#{opts[:port]}"
