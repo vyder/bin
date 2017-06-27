@@ -4,6 +4,7 @@
 !.gitignore
 
 # Git helpers
+!clone
 !git-big-blobs
 !git-deploy-all
 !git-merge-all

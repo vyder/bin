@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+git_repo_regex = /^git@.+:.+\/.+\.git$/
+
+if ["-h", "--help"].include? ARGV.first
+    puts <<-EOS
+Usage: clone [dir] # git clone {clipboard} [dir]
+                   # if clipboard matches:
+                   #    #{git_repo_regex.inspect}
+EOS
+    exit
+end
+
+clipboard = %x(pbpaste).chomp
+dir       = ARGV.first
+
+if clipboard.match git_repo_regex
+    command = "git clone #{clipboard} #{dir}"
+
+    puts "❯ #{command}"
+    %x(#{command})
+else
+    puts "'#{clipboard}' is not a git repository"
+    exit 1
+end
