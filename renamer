@@ -55,7 +55,7 @@ exts.each do |ext|
         end
 
         # Only trash the folder if it's not the current one
-        unless dir == "." || dry_run?
+        unless dir == "." || opts.dry_run?
             FileUtils.mv(dir, "#{ENV['HOME']}/.Trash/")
         end
     end
