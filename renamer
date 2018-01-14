@@ -16,6 +16,10 @@ exts = [
     "mkv"
 ]
 
+def is_clean_movie(name)
+    !name.match(/\[\d{4}\]/).nil?
+end
+
 def clean_name(name)
     name.gsub(/[.]/, ' ').gsub(/[\[\]\-\{\}]/, ' ').gsub(/ +$/, '')
 end
@@ -38,7 +42,7 @@ exts.each do |ext|
 
         # Movie?
         m = file.match /^(.+?)(\d{4})/
-        unless m.nil?
+        unless m.nil? || is_clean_movie(file)
             name = clean_name(m[1])
             year = m[2]
 
