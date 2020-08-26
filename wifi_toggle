@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+def wifi_on?
+    !%x(networksetup -getairportpower en0).match(/On/).nil?
+end
+
+def current_state
+    wifi_on? ? "on" : "off"
+end
+
+def next_state
+    wifi_on? ? "off" : "on"
+end
+
+CMD = "networksetup -setairportpower en0 #{next_state}"
+%x(#{CMD})
+
+if $?.exitstatus == 0
+    puts "Wifi Turned #{current_state.capitalize}"
+else
+    puts "Something went wrong"
+end
