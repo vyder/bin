@@ -12,6 +12,7 @@
 
 # Util
 !cpp-gen
+!f
 !php-server
 !renamer
 !server
