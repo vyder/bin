@@ -20,6 +20,7 @@
 !sub
 !unity
 !wifi_toggle
+!lock
 
 # File creation
 !tx
