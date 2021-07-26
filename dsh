@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cmd=${2:-bash}
+docker exec -it $1 $cmd

@@ -25,3 +25,7 @@
 # File creation
 !tx
 !txn
+
+# Docker
+!dps
+!dsh
