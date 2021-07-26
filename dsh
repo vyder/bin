@@ -1,4 +1,8 @@
 #!/bin/bash
 
-cmd=${2:-bash}
-docker exec -it $1 $cmd
+tag=$1
+shift
+
+cmd=${@:-bash}
+
+docker exec -it $tag $cmd
