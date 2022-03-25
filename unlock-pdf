@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+files = ARGV.dup
+password = files.shift
+
+cmd = "qpdf"
+options = "--decrypt --password=#{password} --replace-input"
+
+files.each do |filename|
+    print "Unlocking #{filename}..."
+    %x(#{cmd} #{filename.inspect} #{options})
+    puts "Done."
+end
+
+puts "All Done."
