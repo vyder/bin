@@ -1,5 +1,11 @@
 #!/usr/bin/env ruby
 
+if ARGV[0].match(/help/)
+    puts "\nUsage:"
+    puts "    ❯ unlock-pdf password files"
+    exit 0
+end
+
 files = ARGV.dup
 password = files.shift
 
