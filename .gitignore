@@ -11,6 +11,8 @@
 !git-rewrite-author
 
 # Util
+!bp
+!blueprint
 !cpp-gen
 !f
 !php-server

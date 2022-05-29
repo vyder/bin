@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+#
+# Blueprints
+# Usage: bp react my-new-react-app
+#
+#
+BLUEPRINTS = {
+    react: "git@gitlab.com:monkeychai/blueprints/react-starter.git",
+}
+
+target, dest = ARGV
+
+# Abort with error message and provide available options
+def abort(msg)
+    puts "ERROR: #{msg}"
+    puts "Available Options: #{BLUEPRINTS.keys.join(" | ")}"
+    exit 1
+end
+
+blueprint = BLUEPRINTS[target.to_sym]
+
+abort "Please specify a blueprint"    if target.nil?
+abort "Unknown blueprint '#{target}'" if blueprint.nil?
+
+# Clone the blueprint
+%x(git clone #{blueprint} #{dest})
