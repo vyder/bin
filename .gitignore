@@ -11,6 +11,7 @@
 !git-rewrite-author
 
 # Util
+!tool
 !bp
 !blueprint
 !cpp-gen
