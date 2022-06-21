@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+
+require 'bytesize'
+require 'fileutils'
+require 'slop'
+
+opts = Slop.parse do |o|
+    o.bool '-d', '--dry-run', "Don't actually rename anything", default: false
+    o.on '-h', '--help' do
+        puts o
+        exit
+    end
+end
+
+command = opts.arguments.shift
+
+if command === "npm"
+    mods = Dir.glob("node_modules") + Dir.glob("*/node_modules")
+    puts opts.dry_run? ? "Will remove:" : "Removing:"
+    total = 0
+    mods.each do |dir|
+        size = %x(du -d 0 --si #{dir}).chomp.split("\t").first.strip
+        size += "B"
+        size.gsub("BB", "B")
+
+        bs = ByteSize.new(size)
+        total += bs.to_bytes
+
+        puts "    #{bs} #{dir}"
+        unless opts.dry_run?
+            FileUtils.rm_rf dir
+        end
+    end
+    puts "Total: #{ByteSize.new(total)}"
+    puts "Done."
+    exit(0)
+
+else
+    puts "
+ERROR: Unknown command '#{command}'\n\n"
+    puts opts
+    exit 1
+end

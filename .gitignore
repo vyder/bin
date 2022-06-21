@@ -14,6 +14,7 @@
 !tool
 !bp
 !blueprint
+!clean
 !cpp-gen
 !f
 !php-server
