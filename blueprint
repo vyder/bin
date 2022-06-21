@@ -7,6 +7,7 @@
 #
 BLUEPRINTS = {
     react: "git@gitlab.com:monkeychai/blueprints/react-starter.git",
+    "laravel-react" => "git@gitlab.com:monkeychai/blueprints/laravel-react.git"
 }
 
 target, dest = ARGV
@@ -18,7 +19,7 @@ def abort(msg)
     exit 1
 end
 
-blueprint = BLUEPRINTS[target.to_sym]
+blueprint = BLUEPRINTS[target] || BLUEPRINTS[target.to_sym]
 
 abort "Please specify a blueprint"    if target.nil?
 abort "Unknown blueprint '#{target}'" if blueprint.nil?
