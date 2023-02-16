@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+require 'slop'
+
+def stop_and_remove(container_list)
+  if container_list.empty?
+    puts "\n  ERROR: You must provide at least one container name or ID to stop and remove."
+    exit 1
+  else
+    args = container_list.join(' ')
+    system("docker stop #{args} > /dev/null")
+    system("docker   rm #{args} > /dev/null")
+  end
+end
+
+# Parse command-line options
+opts = Slop.parse do |o|
+  o.banner = "Usage: dkill [options] [CONTAINER1] [CONTAINER2] ..."
+  o.bool '-a', '--all', 'Stop and remove all Docker containers'
+end
+
+containers = opts[:all] ? %x(docker ps -a -q).split("\n") : opts.arguments
+
+stop_and_remove(containers)
+puts <<-EOF
+
+  Removed:
+    - #{containers.join('\n    - ')}
+EOF
