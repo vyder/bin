@@ -25,5 +25,5 @@ stop_and_remove(containers)
 puts <<-EOF
 
   Removed:
-    - #{containers.join('\n    - ')}
+    - #{containers.join("\n    - ")}
 EOF
