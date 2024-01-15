@@ -6,6 +6,7 @@
 #
 #
 BLUEPRINTS = {
+    bun: "bun",
     react: "git@gitlab.com:monkeychai/blueprints/react-starter.git",
     "laravel-react" => "git@gitlab.com:monkeychai/blueprints/laravel-react.git"
 }
@@ -15,14 +16,21 @@ target, dest = ARGV
 # Abort with error message and provide available options
 def abort(msg)
     puts "ERROR: #{msg}"
-    puts "Available Options: #{BLUEPRINTS.keys.join(" | ")}"
+    puts "    [#{BLUEPRINTS.keys.join(', ')}]"
     exit 1
 end
 
-blueprint = BLUEPRINTS[target] || BLUEPRINTS[target.to_sym]
+abort "Please specify a blueprint:" if target.nil?
+dest = "project-#{target}" if dest.nil?
 
-abort "Please specify a blueprint"    if target.nil?
+blueprint = BLUEPRINTS[target] || BLUEPRINTS[target.to_sym]
 abort "Unknown blueprint '#{target}'" if blueprint.nil?
 
+if blueprint == "bun"
+%x(bun create monkeychai/bun-api #{dest})
+%x(bun run #{dest}/bin/setup.ts run #{dest})
+
+else
 # Clone the blueprint
 %x(git clone #{blueprint} #{dest})
+end
