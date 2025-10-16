@@ -3,8 +3,10 @@
 require 'fileutils'
 require 'slop'
 
-opts = Slop.parse do |o|
+OPTS = Slop.parse do |o|
     o.bool '-d', '--dry-run', "Don't actually rename anything", default: false
+    o.bool '--only-movies', "Rename only movies", default: false
+    o.bool '--only-tv', "Rename only TV shows", default: false
     o.on '-h', '--help', "Prints this message" do
         puts o
         exit
@@ -15,6 +17,14 @@ exts = [
     "mp4",
     "mkv"
 ]
+
+def scan_movies
+    OPTS.only_movies? || !OPTS.only_tv?
+end
+
+def scan_tv
+    OPTS.only_tv? || !OPTS.only_movies?
+end
 
 def is_clean_movie(name)
     !name.match(/\[\d{4}\]/).nil?
@@ -31,27 +41,31 @@ exts.each do |ext|
 
         new_filename = nil
 
-        # TV Show?
-        m = file.match /^(.+?)(S\d{2}E\d{2})/
-        unless m.nil?
-            name   = clean_name(m[1])
-            serial = m[2]
+        if scan_tv
+            # TV Show?
+            m = file.match /^(.+?)(S\d{2}E\d{2})/
+            unless m.nil?
+                name   = clean_name(m[1])
+                serial = m[2]
 
-            new_filename = "#{name} - #{serial}.#{ext}"
+                new_filename = "#{name} - #{serial}.#{ext}"
+            end
         end
 
         # Movie?
-        m = file.match /^(.+?)(\d{4})/
-        if new_filename.nil? && !m.nil? && !is_clean_movie(file)
-            name = clean_name(m[1])
-            year = m[2]
+        if scan_movies
+            m = file.match /^(.+?)(\d{4})/
+            if new_filename.nil? && !m.nil? && !is_clean_movie(file)
+                name = clean_name(m[1])
+                year = m[2]
 
-            new_filename = "#{name} [#{year}].#{ext}"
+                new_filename = "#{name} [#{year}].#{ext}"
+            end
         end
 
         # Rename the file
         unless new_filename.nil? || (filename == new_filename)
-            if opts.dry_run?
+            if OPTS.dry_run?
                 puts "#{filename} => #{new_filename}"
             else
                 FileUtils.mv(filename, new_filename)
@@ -59,7 +73,7 @@ exts.each do |ext|
         end
 
         # Only trash the folder if it's not the current one
-        unless dir == "." || opts.dry_run?
+        unless dir == "." || OPTS.dry_run?
             FileUtils.mv(dir, "#{ENV['HOME']}/.Trash/")
         end
     end
