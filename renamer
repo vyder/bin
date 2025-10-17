@@ -5,6 +5,8 @@ require 'slop'
 
 OPTS = Slop.parse do |o|
     o.bool '-d', '--dry-run', "Don't actually rename anything", default: false
+    o.bool '-m', '--movies', "Assume this current directory is all movie files", default: false
+    o.bool '-t', '--tv', "Assume this current directory is all TV Shows", default: false
     o.bool '--only-movies', "Rename only movies", default: false
     o.bool '--only-tv', "Rename only TV shows", default: false
     o.on '-h', '--help', "Prints this message" do
@@ -17,6 +19,11 @@ exts = [
     "mp4",
     "mkv"
 ]
+
+if OPTS.movies? and OPTS.tv?
+    raise "ERROR: Cannot specify both --movies and --tv"
+    exit 1
+end
 
 def scan_movies
     OPTS.only_movies? || !OPTS.only_tv?
